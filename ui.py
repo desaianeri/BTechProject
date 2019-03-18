@@ -121,11 +121,20 @@ background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 #Adding buttons
 
-dataset = tk.Button(root, text="Choose Datasets", width = 20, height = 5, bg = "blue", command=callback)
-algo = tk.Button(root, text="Choose Algorithms", width = 20, height = 5, bg = "red", command = selectalgo)
-run = tk.Button(root, text="RUN", width = 20, height = 5, bg = "yellow", command=callback)
-dataset.place(x = 10, y = 100)
-algo.place(x = 10, y = 300)
-run.place(x = 10, y =500 )
+dataset = tk.Button(root, text="Choose Datasets")
+photo = ImageTk.PhotoImage(Image.open("dataset.png"))
+dataset.config(image=photo,width ="130",height = "70", activebackground="black", bd=0, command = callback)
+
+algo = tk.Button(root, text="Choose Algorithms")
+photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
+algo.config(image=photo1,width ="140",height = "60", activebackground="black", bd=0, command = selectalgo)
+
+run = tk.Button(root, text="RUN")
+photo2 = ImageTk.PhotoImage(Image.open("run.png"))
+run.config(image=photo2,width ="160",height = "130", activebackground="black",bg="black", command = callback)
+
+dataset.place(x = 700, y = 590)
+algo.place(x = 400, y = 600)
+run.place(x = 1100, y = 545 )
 
 root.mainloop()
