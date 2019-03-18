@@ -1,5 +1,8 @@
 import Tkinter as tk
 from PIL import ImageTk, Image
+import tkFileDialog
+#from Tkinter import *
+from tkFileDialog   import askopenfilename
 
 #Fullscreen window
 
@@ -24,6 +27,32 @@ def center(win):
         y = win.winfo_screenheight() // 2 - win_height // 2
         win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
         win.deiconify()
+
+
+n = 100
+
+def filechoose():
+    global n
+    filez = tkFileDialog.askopenfilenames(parent=root,title='Choose a file')
+    pathlabel2 = tk.Label(root)
+    pathlabel2.pack()
+    pathlabel2.config(text=filez)
+    m = 650
+    pathlabel2.place(x = m ,y = n)
+    n = n + 100
+    print root.tk.splitlist(filez)
+
+
+
+def callback():
+	master = tk.Toplevel(root)
+	center(master)
+	width = master.winfo_screenwidth()
+	height = master.winfo_screenheight()
+	master.geometry('%sx%s' % (width/4, height/4))
+
+	d1 = tk.Button(master, text="Add dataset", width = 10, height = 2, bg = "blue", command=filechoose).grid(row = 0, sticky = tk.W)
+
 
 
 def selectalgo():
@@ -89,9 +118,6 @@ def selectalgo():
 background_image=ImageTk.PhotoImage(Image.open("b4.png"))
 background_label = tk.Label(image=background_image)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
-
-def callback():
-    print "click!"
 
 #Adding buttons
 
