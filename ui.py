@@ -49,6 +49,11 @@ n = 100
 def execute():
 	total_num_datasets = 0
 	dataset_string = []
+	Mat10cv = []
+
+	for i in range(0, len(final_algo)):
+		Mat10cv.append([])
+
 	#print(final_algo)
 	#print(len(final_algo))
 
@@ -72,13 +77,19 @@ def execute():
 
 		while(a < len(final_algo)):
 			algo_name = get_algo_name(final_algo[a])
-			CV10(str(dataset_string[d]), algo_name, total_num_datasets)	
+			Mat10cv[d].append(a)
+			Mat10cv[d][a] = CV10(str(dataset_string[d]), algo_name, total_num_datasets)	
 			a = a + 1
 
 		d = d + 1
 	jvm.stop()
 
-
+'''
+	#printing 10cv matrix
+	for i in range(0, total_num_datasets):
+		for j in range(0, len(final_algo)):
+			print (Mat10cv[i][j]),
+'''
 #Getting the algorithm names
 def get_algo_name(algo):
 	switch = {
@@ -113,10 +124,11 @@ def CV10(dataset,  algo, num_datasets):
 #	plcls.plot_roc(evl, class_index=[0,1], wait=True)
 	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
 
+	return evl.area_under_roc(1)
+
 #	jvm.stop()
 
-	#Building the mean matrix for 10cv
-
+	
 #Adding Datasets
 
 def filechoose():
