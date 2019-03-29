@@ -15,6 +15,7 @@ from weka.core.converters import Loader
 
 final_algo = []
 final_data_list = []
+algo_list = []
 
 #Fullscreen window
 
@@ -43,15 +44,13 @@ def center(win):
 
 
 n = 100
-
 #RUN action
 
 def execute():
-
 	total_num_datasets = 0
 	dataset_string = []
-	print(final_algo)
-	print(len(final_algo))
+	#print(final_algo)
+	#print(len(final_algo))
 
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
@@ -61,6 +60,10 @@ def execute():
 		for j in i:
 			dataset_string.append(j)
 
+
+	#Implementation of 10cv cross validation
+
+
 	d = 0
 	jvm.start(packages = True)		#Must start and stop jvm once .Else runtime error of cannot start jvm
 	while(d < len(dataset_string)):
@@ -68,42 +71,51 @@ def execute():
 		a = 0
 
 		while(a < len(final_algo)):
-
-			CV10(str(dataset_string[d]), str(final_algo[a]))	
+			algo_name = get_algo_name(final_algo[a])
+			CV10(str(dataset_string[d]), algo_name, total_num_datasets)	
 			a = a + 1
 
 		d = d + 1
 	jvm.stop()
 
 
+#Getting the algorithm names
+def get_algo_name(algo):
+	switch = {
+		"ANN" : "functions.MultilayerPerceptron",
+		"KNN" : "lazy.IBk",
+		"SVM" : "functions.SMO",
+		"Randf" : "trees.RandomForest",
+		"NaiveB" : "bayes.NaiveBayes"
+	}
+	return switch.get(algo, "no_match")
+
+
 #Performs 10cv cross validation and stores the mean in the matrix
 
-def CV10(dataset,  algo):
-	print "inside 10cv"
-	print("dataset ----" + dataset)
-	print("algorithm ----" + algo)
+def CV10(dataset,  algo, num_datasets):
 
 	#Executing 10FCV
-
 #	jvm.start(packages=True)
 	loader = Loader(classname="weka.core.converters.ArffLoader")
 	data = loader.load_file(dataset)
 	data.class_is_last()
 
 	#print(data)
-
-	cls = Classifier(classname="weka.classifiers.bayes.NaiveBayes")
+	cls = Classifier(classname="weka.classifiers." + algo)
 
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 2, Random(5))
 
-	print(evl.summary("=== NaiveBayes on click prediction (stats) ===",False))
-	print(evl.matrix("=== NaiveBayes on click prediction(confusion matrix) ==="))
+	print(evl.summary(algo + " on" + dataset +" (stats) ===",False))
+	print(evl.matrix(algo + " on " + dataset + "(confusion matrix) ==="))
 	#plcls.plot_classifier_errors(evl.predictions, absolute=False,wait = True)
 #	plcls.plot_roc(evl, class_index=[0,1], wait=True)
 	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
 
 #	jvm.stop()
+
+	#Building the mean matrix for 10cv
 
 #Adding Datasets
 
@@ -132,10 +144,9 @@ def selectalgo():
         master.geometry('%sx%s' % (width/4, height/4))
 
         def var_states():
-
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
                 l = len(algo_list)
-                print (algo_list)		
+#                print (algo_list)		
 
                 
                 n = i = 0
