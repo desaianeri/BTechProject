@@ -16,6 +16,7 @@ from weka.core.converters import Loader
 final_algo = []
 final_data_list = []
 algo_list = []
+rank_10cv = []
 
 #Fullscreen window
 
@@ -50,9 +51,10 @@ def execute():
 	total_num_datasets = 0
 	dataset_string = []
 	Mat10cv = []
+	mat_list = []
+#	for i in range(0, len(final_algo)):
+#		Mat10cv.append([])
 
-	for i in range(0, len(final_algo)):
-		Mat10cv.append([])
 
 	#print(final_algo)
 	#print(len(final_algo))
@@ -74,22 +76,79 @@ def execute():
 	while(d < len(dataset_string)):
 
 		a = 0
-
+		mat_list =[]
 		while(a < len(final_algo)):
 			algo_name = get_algo_name(final_algo[a])
-			Mat10cv[d].append(a)
-			Mat10cv[d][a] = CV10(str(dataset_string[d]), algo_name, total_num_datasets)	
+#			Mat10cv[d].append(a)
+			mat_list.append(CV10(str(dataset_string[d]), algo_name, total_num_datasets))	
 			a = a + 1
-
+		Mat10cv.append(mat_list)
 		d = d + 1
 	jvm.stop()
 
-'''
-	#printing 10cv matrix
-	for i in range(0, total_num_datasets):
-		for j in range(0, len(final_algo)):
-			print (Mat10cv[i][j]),
-'''
+
+	#Sorts the entries row wise to calculate the ranks
+
+	for i in Mat10cv:
+		#print Mat10cv[i]
+		i.sort()
+#	print("-----sorted : " + str(Mat10cv))
+	#Creating a rank matrix
+	rank(Mat10cv, total_num_datasets)
+	
+		
+#Calculates rank of a given sorted matrix
+def rank(mat, num_datasets):
+	i = 0
+
+	while(i < num_datasets):
+
+	        j = 0
+	        rline = []
+	        r = 1
+
+	        while (j < (len(final_algo) - 1)): 
+
+	                if(mat[i][j] != mat[i][j + 1]):
+	                        rline.append(r)
+	                        r = r + 1
+	                        j = j + 1
+	                        if(j == (len(final_algo) - 1)):
+	                                rline.append(r)
+	                                continue
+	                        else:
+	                                continue
+
+	                else:   #repetitions exist
+	                        count = 2
+	                        k = j
+
+        	                while( j < (len(final_algo) - 2)):
+        	                        if( mat[i][j + 1] == mat[i][j + 2]):    #col - 2        
+        	                                count = count + 1
+        	                                j = j + 1
+                	                        continue
+                        	        else:
+                        	                break
+
+	                        l = 0
+	                        while(l < count):
+	                                rline.append(r/float(count))
+	                                l = l + 1
+	                        r = r + 1
+	                        j = k + count
+
+        	        if(len(rline) == (len(final_algo) - 1)):
+        	                rline.append(r)
+	        rank_10cv.append(rline)
+	        i = i + 1
+
+	i = 0
+	while(i < num_datasets):
+	        print("------#" + str(i + 1) + "---------" + str(rank_10cv[i]))
+	        i = i + 1
+
+
 #Getting the algorithm names
 def get_algo_name(algo):
 	switch = {
