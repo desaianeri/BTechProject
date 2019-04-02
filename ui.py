@@ -52,12 +52,7 @@ def execute():
 	dataset_string = []
 	Mat10cv = []
 	mat_list = []
-#	for i in range(0, len(final_algo)):
-#		Mat10cv.append([])
-
-
-	#print(final_algo)
-	#print(len(final_algo))
+	avg_rank_list_10cv = []
 
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
@@ -90,14 +85,40 @@ def execute():
 	#Sorts the entries row wise to calculate the ranks
 
 	for i in Mat10cv:
-		#print Mat10cv[i]
 		i.sort()
-#	print("-----sorted : " + str(Mat10cv))
-	#Creating a rank matrix
+
+	#Rank matrix generation
+
 	rank(Mat10cv, total_num_datasets)
-	
+	print("rank matrix ------" + str(rank_10cv))
+	#calculating avergage rank list for a given rank matrix
+
+	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets)
+	print"avg ranks-----------" + str(avg_rank_list_10cv)
+
+#Calculation of average rank
+
+def avg_rank_10cv(num_datasets):
+
+	i = 0
+	tmp = []
+
+	while(i < len(final_algo)):
+
+		j = 0
+		sum_ranks = 0
+
+		while(j < num_datasets):
+			sum_ranks = sum_ranks + rank_10cv[j][i]	
+			j = j + 1
+
+		tmp.append(sum_ranks / num_datasets)
+		i = i + 1
 		
+	return tmp	
+
 #Calculates rank of a given sorted matrix
+
 def rank(mat, num_datasets):
 	i = 0
 
@@ -143,12 +164,6 @@ def rank(mat, num_datasets):
 	        rank_10cv.append(rline)
 	        i = i + 1
 
-	i = 0
-	while(i < num_datasets):
-	        print("------#" + str(i + 1) + "---------" + str(rank_10cv[i]))
-	        i = i + 1
-
-
 #Getting the algorithm names
 def get_algo_name(algo):
 	switch = {
@@ -166,12 +181,10 @@ def get_algo_name(algo):
 def CV10(dataset,  algo, num_datasets):
 
 	#Executing 10FCV
-#	jvm.start(packages=True)
 	loader = Loader(classname="weka.core.converters.ArffLoader")
 	data = loader.load_file(dataset)
 	data.class_is_last()
 
-	#print(data)
 	cls = Classifier(classname="weka.classifiers." + algo)
 
 	evl = Evaluation(data)
@@ -185,9 +198,6 @@ def CV10(dataset,  algo, num_datasets):
 
 	return evl.area_under_roc(1)
 
-#	jvm.stop()
-
-	
 #Adding Datasets
 
 def filechoose():
@@ -202,9 +212,6 @@ def filechoose():
     n = n + 100
     dataset_list = root.tk.splitlist(filez)
     final_data_list.append(dataset_list)
-#    print(final_data_list)
-
-
 
 #Select algo
 def selectalgo():
@@ -217,11 +224,8 @@ def selectalgo():
         def var_states():
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
                 l = len(algo_list)
-#                print (algo_list)		
 
-                
                 n = i = 0
-
 
                 while n < l:
                         if algo_list[0] == 1 and n == 0:
@@ -247,9 +251,6 @@ def selectalgo():
 		print ("Number of algorithms selected : " + str(algo_len))
                 master.destroy()
 
-
-
-
         label = tk.Label(master, text="Algorithms:", bg = "white").grid(row = 0, sticky = tk.W)
         var1 = tk.IntVar()
         cb1 = tk.Checkbutton(master, text = "ANN", bg = "white", variable = var1).grid(row = 1, sticky = tk.W)
@@ -265,7 +266,6 @@ def selectalgo():
         done = tk.Button(master, text = "Done", bg = "yellow", command = var_states).grid(row = 6, sticky = tk.W, pady = 4)
         quit = tk.Button(master, text = "Quit", bg = "red", command = master.destroy).grid(row = 7, sticky = tk.W, pady = 4)
         master["bg"] = "white"
-
 
 #Background Image
 
