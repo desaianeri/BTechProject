@@ -11,12 +11,12 @@ import os
 from weka.core.converters import Loader
 
 
+
 #Declaration of global variables
 
 final_algo = []
 final_data_list = []
 algo_list = []
-rank_10cv = []
 
 #Fullscreen window
 
@@ -54,6 +54,10 @@ def execute():
 	mat_list = []
 	avg_rank_list_10cv = []
 
+	MatHov = []
+	mat_Hlist = []
+	avg_rank_list_Hov = []
+
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
 
@@ -73,11 +77,12 @@ def execute():
 		a = 0
 		mat_list =[]
 		while(a < len(final_algo)):
-			algo_name = get_algo_name(final_algo[a])
 #			Mat10cv[d].append(a)
-			mat_list.append(CV10(str(dataset_string[d]), algo_name, total_num_datasets))	
+			mat_list.append(CV10(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))
+			mat_Hlist.append(HOV(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))	
 			a = a + 1
 		Mat10cv.append(mat_list)
+		MatHov.append(mat_Hlist)
 		d = d + 1
 	jvm.stop()
 
@@ -87,18 +92,29 @@ def execute():
 	for i in Mat10cv:
 		i.sort()
 
+	for i in MatHov:
+		i.sort()
+
 	#Rank matrix generation
 
-	rank(Mat10cv, total_num_datasets)
+	rank_10cv = rank(Mat10cv, total_num_datasets)
 	print("rank matrix ------" + str(rank_10cv))
+
+	rank_Hov = rank(MatHov, total_num_datasets)
+	print("rank matrix ------" + str(rank_Hov))
 	#calculating avergage rank list for a given rank matrix
 
-	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets)
+	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets, rank_10cv)
 	print"avg ranks-----------" + str(avg_rank_list_10cv)
+
+	avg_rank_list_Hov = avg_rank_Hov(total_num_datasets, rank_Hov)
+	print"avg ranks-----------" + str(avg_rank_list_Hov)
+
+
 
 #Calculation of average rank
 
-def avg_rank_10cv(num_datasets):
+def avg_rank_10cv(num_datasets, rank_10cv):
 
 	i = 0
 	tmp = []
@@ -115,12 +131,32 @@ def avg_rank_10cv(num_datasets):
 		tmp.append(sum_ranks / num_datasets)
 		i = i + 1
 		
-	return tmp	
+	return tmp
+
+def avg_rank_Hov(num_datasets, rank_Hov):
+
+	i = 0
+	tmp = []
+
+	while(i < len(final_algo)):
+
+		j = 0
+		sum_ranks = 0
+
+		while(j < num_datasets):
+			sum_ranks = sum_ranks + rank_Hov[j][i]	
+			j = j + 1
+
+		tmp.append(sum_ranks / num_datasets)
+		i = i + 1
+		
+	return tmp
 
 #Calculates rank of a given sorted matrix
 
 def rank(mat, num_datasets):
 	i = 0
+	temp = []
 
 	while(i < num_datasets):
 
@@ -161,20 +197,12 @@ def rank(mat, num_datasets):
 
         	        if(len(rline) == (len(final_algo) - 1)):
         	                rline.append(r)
-	        rank_10cv.append(rline)
+	        temp.append(rline)
 	        i = i + 1
 
-#Getting the algorithm names
-def get_algo_name(algo):
-	switch = {
-		"ANN" : "functions.MultilayerPerceptron",
-		"KNN" : "lazy.IBk",
-		"SVM" : "functions.SMO",
-		"Randf" : "trees.RandomForest",
-		"NaiveB" : "bayes.NaiveBayes"
-	}
-	return switch.get(algo, "no_match")
 
+	return temp
+	
 
 #Performs 10cv cross validation and stores the mean in the matrix
 
@@ -185,18 +213,31 @@ def CV10(dataset,  algo, num_datasets):
 	data = loader.load_file(dataset)
 	data.class_is_last()
 
-	cls = Classifier(classname="weka.classifiers." + algo)
+	cls = Classifier(classname=algo)
 
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 2, Random(5))
 
-	print(evl.summary(algo + " on" + dataset +" (stats) ===",False))
-	print(evl.matrix(algo + " on " + dataset + "(confusion matrix) ==="))
-	#plcls.plot_classifier_errors(evl.predictions, absolute=False,wait = True)
-#	plcls.plot_roc(evl, class_index=[0,1], wait=True)
-	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
+	return evl.area_under_roc(1)
+
+def HOV(dataset,  algo, num_datasets):
+	#Executing HOV \_*-*_/
+
+#	jvm.start(packages=True)
+	loader = Loader(classname="weka.core.converters.ArffLoader")
+	data = loader.load_file(dataset)
+	data.class_is_last()
+
+	train, test = data.train_test_split(70.0, Random(10))
+
+	cls = Classifier(classname=algo)
+	cls.build_classifier(train)
+
+	evl = Evaluation(train)
+	evl.test_model(cls, test)
 
 	return evl.area_under_roc(1)
+	
 
 #Adding Datasets
 
@@ -220,6 +261,7 @@ def selectalgo():
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
         master.geometry('%sx%s' % (width/4, height/4))
+	master.config(bg = "white")
 
         def var_states():
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
@@ -229,21 +271,22 @@ def selectalgo():
 
                 while n < l:
                         if algo_list[0] == 1 and n == 0:
-                                final_algo.insert(i, "ANN")
+                                final_algo.insert(i, "weka.classifiers.functions.MultilayerPerceptron")
                                 i += 1
                         if algo_list[1] == 1 and n == 1:
-                                final_algo.insert(i, "KNN")
+                                final_algo.insert(i, "weka.classifiers.lazy.IBk")
                                 i += 1
                         if algo_list[2] == 1 and n == 2:
-                                final_algo.insert(i, "SVM")
+                                final_algo.insert(i, "weka.classifiers.functions.SMO")
                                 i += 1
                         if algo_list[3] == 1 and n == 3:
-                                final_algo.insert(i, "Randf")
+                                final_algo.insert(i, "weka.classifiers.trees.RandomForest")
                                 i += 1
                         if algo_list[4] == 1 and n == 4:
-                                final_algo.insert(i, "NaiveB")
+                                final_algo.insert(i, "weka.classifiers.bayes.NaiveBayes")
                                 i += 1
                         n += 1
+
 
 
                 print(final_algo)	#Print algo list
@@ -251,21 +294,26 @@ def selectalgo():
 		print ("Number of algorithms selected : " + str(algo_len))
                 master.destroy()
 
-        label = tk.Label(master, text="Algorithms:", bg = "white").grid(row = 0, sticky = tk.W)
+        algo_pic = ImageTk.PhotoImage(Image.open("dd6.png"))
+        label = tk.Label(master, image = algo_pic, text="Algorithms:", bg = "white").grid(row = 0, sticky = tk.W, pady = 1)
         var1 = tk.IntVar()
-        cb1 = tk.Checkbutton(master, text = "ANN", bg = "white", variable = var1).grid(row = 1, sticky = tk.W)
+        cb1 = tk.Checkbutton(master, text = "ANN", bg = "white", variable = var1).grid(row = 2, sticky = tk.W)
         var2 = tk.IntVar()
-        cb2 = tk.Checkbutton(master, text = "KNN", bg = "white", variable = var2).grid(row = 2, sticky = tk.W)
+        cb2 = tk.Checkbutton(master, text = "KNN", bg = "white", variable = var2).grid(row = 3, sticky = tk.W)
         var3 = tk.IntVar()
-        cb3 = tk.Checkbutton(master, text = "SVM", bg = "white", variable = var3).grid(row = 3, sticky = tk.W)
+        cb3 = tk.Checkbutton(master, text = "SVM", bg = "white", variable = var3).grid(row = 4, sticky = tk.W)
         var4 = tk.IntVar()
-        cb4 = tk.Checkbutton(master, text = "Random Forest",bg = "white", variable = var4).grid(row = 4, sticky = tk.W)
+        cb4 = tk.Checkbutton(master, text = "Random Forest",bg = "white", variable = var4).grid(row = 5, sticky = tk.W)
         var5 = tk.IntVar()
-        cb5 = tk.Checkbutton(master, text = "Naive Bayes",bg = "white", variable = var5).grid(row = 5, sticky = tk.W)
+        cb5 = tk.Checkbutton(master, text = "Naive Bayes",bg = "white", variable = var5).grid(row = 6, sticky = tk.W)
 
-        done = tk.Button(master, text = "Done", bg = "yellow", command = var_states).grid(row = 6, sticky = tk.W, pady = 4)
-        quit = tk.Button(master, text = "Quit", bg = "red", command = master.destroy).grid(row = 7, sticky = tk.W, pady = 4)
-        master["bg"] = "white"
+	dphoto = ImageTk.PhotoImage(Image.open("dd4.png"))
+        done = tk.Button(master, text = "done",image = dphoto, bg = "white", command = var_states).grid(row = 7, sticky = tk.W, pady = 4)
+	qphoto = ImageTk.PhotoImage(Image.open("dd5.png"))
+        quit = tk.Button(master, text = "quit",image = qphoto, bg = "white", command = master.destroy).grid(row = 7, column = 2, sticky = tk.W, pady = 4)
+
+	
+   	master.mainloop()
 
 #Background Image
 
