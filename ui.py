@@ -1,7 +1,7 @@
 import Tkinter as tk
 from PIL import ImageTk, Image
 import tkFileDialog
-from tkFileDialog   import askopenfilename
+from tkFileDialog  import askopenfilename
 import weka.core.jvm as jvm
 import weka.core.converters as conv
 from weka.classifiers import Evaluation, Classifier
@@ -16,7 +16,6 @@ from weka.core.converters import Loader
 final_algo = []
 final_data_list = []
 algo_list = []
-rank_10cv = []
 
 #Fullscreen window
 
@@ -48,11 +47,13 @@ n = 100
 #RUN action
 
 def execute():
+
 	total_num_datasets = 0
 	dataset_string = []
 	Mat10cv = []
 	mat_list = []
 	avg_rank_list_10cv = []
+        rank_10cv = []
 
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
@@ -82,27 +83,27 @@ def execute():
 	jvm.stop()
 
 
-	#Sorts the entries row wise to calculate the ranks
+	#Sorts the entries row wise to calculate the ranks in descending order
 
 	for i in Mat10cv:
-		i.sort()
+		sorted(i, reverse = True)
 
 	#Rank matrix generation
 
-	rank(Mat10cv, total_num_datasets)
-	print("rank matrix ------" + str(rank_10cv))
+	rank_10cv = rank(Mat10cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
-	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets)
+	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets, rank_10cv)
 	print"avg ranks-----------" + str(avg_rank_list_10cv)
 
 #Calculation of average rank
 
-def avg_rank_10cv(num_datasets):
+def avg_rank_10cv(num_datasets, rank_10cv):
 
 	i = 0
 	tmp = []
 
+#	print("rank matrix ------" + str(rank_10cv))
 	while(i < len(final_algo)):
 
 		j = 0
@@ -120,7 +121,9 @@ def avg_rank_10cv(num_datasets):
 #Calculates rank of a given sorted matrix
 
 def rank(mat, num_datasets):
+
 	i = 0
+        tmp = []
 
 	while(i < num_datasets):
 
@@ -161,8 +164,9 @@ def rank(mat, num_datasets):
 
         	        if(len(rline) == (len(final_algo) - 1)):
         	                rline.append(r)
-	        rank_10cv.append(rline)
+	        tmp.append(rline)
 	        i = i + 1
+        return tmp
 
 #Getting the algorithm names
 def get_algo_name(algo):
@@ -190,8 +194,8 @@ def CV10(dataset,  algo, num_datasets):
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 2, Random(5))
 
-	print(evl.summary(algo + " on" + dataset +" (stats) ===",False))
-	print(evl.matrix(algo + " on " + dataset + "(confusion matrix) ==="))
+#	print(evl.summary(algo + " on" + dataset +" (stats) ===",False))
+#	print(evl.matrix(algo + " on " + dataset + "(confusion matrix) ==="))
 	#plcls.plot_classifier_errors(evl.predictions, absolute=False,wait = True)
 #	plcls.plot_roc(evl, class_index=[0,1], wait=True)
 	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
@@ -246,9 +250,9 @@ def selectalgo():
                         n += 1
 
 
-                print(final_algo)	#Print algo list
-		algo_len = len(final_algo)
-		print ("Number of algorithms selected : " + str(algo_len))
+#                print(final_algo)	#Print algo list
+                algo_len = len(final_algo)
+#		print ("Number of algorithms selected : " + str(algo_len))
                 master.destroy()
 
         label = tk.Label(master, text="Algorithms:", bg = "white").grid(row = 0, sticky = tk.W)
