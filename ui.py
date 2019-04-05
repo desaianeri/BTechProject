@@ -58,6 +58,10 @@ def execute():
 	mat_Hlist = []
 	avg_rank_list_Hov = []
 
+        Mat5x2cv = []
+	mat_5x2list = []
+	avg_rank_list_5x2cv = []
+
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
 
@@ -79,10 +83,12 @@ def execute():
 		while(a < len(final_algo)):
 #			Mat10cv[d].append(a)
 			mat_list.append(CV10(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))
-			mat_Hlist.append(HOV(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))	
+			mat_Hlist.append(HOV(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))
+			mat_5x2list.append(CV5x2(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))	
 			a = a + 1
 		Mat10cv.append(mat_list)
 		MatHov.append(mat_Hlist)
+		Mat5x2cv.append(mat_Hlist)
 		d = d + 1
 	jvm.stop()
 
@@ -95,6 +101,9 @@ def execute():
 	for i in MatHov:
 		i.sort()
 
+	for i in Mat5x2cv:
+		i.sort()
+
 	#Rank matrix generation
 
 	rank_10cv = rank(Mat10cv, total_num_datasets)
@@ -102,15 +111,19 @@ def execute():
 
 	rank_Hov = rank(MatHov, total_num_datasets)
 	print("rank matrix ------" + str(rank_Hov))
+
+        rank_5x2cv = rank(Mat5x2cv, total_num_datasets)
+	print("rank matrix ------" + str(rank_5x2cv))
 	#calculating avergage rank list for a given rank matrix
 
 	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets, rank_10cv)
-	print"avg ranks-----------" + str(avg_rank_list_10cv)
+	print("avg ranks-----------" + str(avg_rank_list_10cv))
 
 	avg_rank_list_Hov = avg_rank_Hov(total_num_datasets, rank_Hov)
-	print"avg ranks-----------" + str(avg_rank_list_Hov)
+	print("avg ranks-----------" + str(avg_rank_list_Hov))
 
-
+        avg_rank_list_5x2cv = avg_rank_5x2cv(total_num_datasets, rank_5x2cv)
+	print("avg ranks-----------" + str(avg_rank_list_5x2cv))
 
 #Calculation of average rank
 
@@ -145,6 +158,26 @@ def avg_rank_Hov(num_datasets, rank_Hov):
 
 		while(j < num_datasets):
 			sum_ranks = sum_ranks + rank_Hov[j][i]	
+			j = j + 1
+
+		tmp.append(sum_ranks / num_datasets)
+		i = i + 1
+		
+	return tmp
+
+
+def avg_rank_5x2cv(num_datasets, rank_5x2cv):
+
+	i = 0
+	tmp = []
+
+	while(i < len(final_algo)):
+
+		j = 0
+		sum_ranks = 0
+
+		while(j < num_datasets):
+			sum_ranks = sum_ranks + rank_5x2cv[j][i]	
 			j = j + 1
 
 		tmp.append(sum_ranks / num_datasets)
@@ -238,7 +271,19 @@ def HOV(dataset,  algo, num_datasets):
 
 	return evl.area_under_roc(1)
 	
+def CV5x2(dataset,  algo, num_datasets):
 
+	#Executing 10FCV
+	loader = Loader(classname="weka.core.converters.ArffLoader")
+	data = loader.load_file(dataset)
+	data.class_is_last()
+
+	cls = Classifier(classname=algo)
+
+	evl = Evaluation(data)
+	evl.crossvalidate_model(cls, data, 2, Random(5))
+
+	return evl.area_under_roc(1)
 #Adding Datasets
 
 def filechoose():
@@ -261,7 +306,7 @@ def selectalgo():
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
         master.geometry('%sx%s' % (width/4, height/4))
-	master.config(bg = "white")
+	master.config(bg="white")
 
         def var_states():
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
