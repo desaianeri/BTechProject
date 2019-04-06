@@ -102,32 +102,59 @@ def execute():
 	#Sorts the entries row wise to calculate the ranks in descending order
 
         index_10cv , sorted_10cv =  perform_sort(Mat10cv)
-#        print("----back index--" + str(index_10cv))
-#        print("----back sorted matrix--" + str(sorted_10cv))
 
-	for i in MatHov:
-		i.sort()
-
-	for i in Mat5x2cv:
-		i.sort()
+#       added - confirm once
+        index_hov, sorted_hov = perform_sort(MatHov)
+        index_5x2cv, sorted_5x2cv = perform_sort(Mat5x2cv)
 
 	#Rank matrix generation
 
 	rank_10cv = rank(sorted_10cv, total_num_datasets)
 
-        print("--rank ::" + str(rank_10cv))
+        #Caluculate final rank with index and sorted rank values
 
-	avg_rank_list_10cv = avg_rank(total_num_datasets, rank_10cv)
+        final_rank_10cv = final_rank(rank_10cv, index_10cv)
+
+        print("---final rank list -----" + str(final_rank_10cv))
+
+	avg_rank_list_10cv = avg_rank(total_num_datasets, final_rank_10cv)
 
         print("--avg rank ::" + str(avg_rank_list_10cv))
-	rank_Hov = rank(MatHov, total_num_datasets)
+	rank_Hov = rank(sorted_hov, total_num_datasets)
 
-        rank_5x2cv = rank(Mat5x2cv, total_num_datasets)
+        rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
 	avg_rank_list_Hov = avg_rank(total_num_datasets, rank_Hov)
 
         avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
+
+#Calculates final rank matrix
+
+def final_rank(rank, index):
+
+    row = len(rank)
+    col = len(rank[0])
+    final_rank_list = [[0 for x in range(col)] for y in range(row)]
+
+#    print("---final rank rank -----" + str(rank))
+#    print("---final rank index -----" + str(index))
+
+    i = 0
+
+    while(i < row):
+
+        j = 0
+
+        while(j < col):    #gives number of columns
+
+            final_rank_list[i][index[i][j]] = rank[i][j]
+            j = j + 1
+
+        i = i + 1
+
+#    print("---final rank list -----" + str(final_rank_list))
+    return final_rank_list
 
 #Sorts the matrix required to calculate rank and generates the index matrix
 
@@ -138,11 +165,11 @@ def perform_sort(mat):
 
     for i in mat:
 
-            sorted_mat.append(numpy.sort(i)[::-1])   
-            index.append(numpy.argsort(i)[::-1])
+            sorted_mat.append((numpy.sort(i)[::-1]).tolist())   
+            index.append((numpy.argsort(i)[::-1]).tolist())
             
-    print("sorted matrix---" + str(sorted_mat))            
-    print("index matrix----" + str(index))
+#    print("sorted matrix---" + str(sorted_mat))            
+#    print("index matrix----" + str(index))
 
     return index , sorted_mat
 
