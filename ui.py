@@ -9,8 +9,7 @@ from weka.core.classes import Random
 import weka.plot.classifiers as plcls  # NB: matplotlib is required
 import os
 from weka.core.converters import Loader
-
-
+import numpy
 
 #Declaration of global variables
 
@@ -43,7 +42,6 @@ def center(win):
         win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
         win.deiconify()
 
-
 n = 100
 #RUN action
 
@@ -64,6 +62,7 @@ def execute():
 	mat_5x2list = []
 	avg_rank_list_5x2cv = []
 
+
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
 
@@ -72,33 +71,39 @@ def execute():
 		for j in i:
 			dataset_string.append(j)
 
-
 	#Implementation of 10cv cross validation
-
 
 	d = 0
 	jvm.start(packages = True)		#Must start and stop jvm once .Else runtime error of cannot start jvm
+
 	while(d < len(dataset_string)):
 
 		a = 0
 		mat_list =[]
+
+                #added confirm once
+                mat_Hlist = []
+                mat_5x2list = []
+
 		while(a < len(final_algo)):
-#			Mat10cv[d].append(a)
+
 			mat_list.append(CV10(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))
 			mat_Hlist.append(HOV(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))
 			mat_5x2list.append(CV5x2(str(dataset_string[d]), str(final_algo[a]), total_num_datasets))	
 			a = a + 1
+
 		Mat10cv.append(mat_list)
 		MatHov.append(mat_Hlist)
 		Mat5x2cv.append(mat_Hlist)
 		d = d + 1
-	jvm.stop()
 
+	jvm.stop()
 
 	#Sorts the entries row wise to calculate the ranks in descending order
 
-	for i in Mat10cv:
-		sorted(i, reverse = True)
+        index_10cv , sorted_10cv =  perform_sort(Mat10cv)
+#        print("----back index--" + str(index_10cv))
+#        print("----back sorted matrix--" + str(sorted_10cv))
 
 	for i in MatHov:
 		i.sort()
@@ -108,26 +113,42 @@ def execute():
 
 	#Rank matrix generation
 
-	rank_10cv = rank(Mat10cv, total_num_datasets)
-<<<<<<< HEAD
+	rank_10cv = rank(sorted_10cv, total_num_datasets)
 
-=======
+        print("--rank ::" + str(rank_10cv))
 
-	avg_rank_list_10cv = avg_rank_10cv(total_num_datasets, rank_10cv)
+	avg_rank_list_10cv = avg_rank(total_num_datasets, rank_10cv)
 
+        print("--avg rank ::" + str(avg_rank_list_10cv))
 	rank_Hov = rank(MatHov, total_num_datasets)
 
         rank_5x2cv = rank(Mat5x2cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
-	avg_rank_list_Hov = avg_rank_Hov(total_num_datasets, rank_Hov)
+	avg_rank_list_Hov = avg_rank(total_num_datasets, rank_Hov)
 
-        avg_rank_list_5x2cv = avg_rank_5x2cv(total_num_datasets, rank_5x2cv)
->>>>>>> e88b924eb55b3ce839f33eed537a776a73f578a3
+        avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
+
+#Sorts the matrix required to calculate rank and generates the index matrix
+
+def perform_sort(mat):
+
+    index = []
+    sorted_mat = []
+
+    for i in mat:
+
+            sorted_mat.append(numpy.sort(i)[::-1])   
+            index.append(numpy.argsort(i)[::-1])
+            
+    print("sorted matrix---" + str(sorted_mat))            
+    print("index matrix----" + str(index))
+
+    return index , sorted_mat
 
 #Calculation of average rank
 
-def avg_rank_10cv(num_datasets, rank_10cv):
+def avg_rank(num_datasets, rank):
 
 	i = 0
 	tmp = []
@@ -139,46 +160,7 @@ def avg_rank_10cv(num_datasets, rank_10cv):
 		sum_ranks = 0
 
 		while(j < num_datasets):
-			sum_ranks = sum_ranks + rank_10cv[j][i]	
-			j = j + 1
-
-		tmp.append(sum_ranks / num_datasets)
-		i = i + 1
-		
-	return tmp
-
-def avg_rank_Hov(num_datasets, rank_Hov):
-
-	i = 0
-	tmp = []
-
-	while(i < len(final_algo)):
-
-		j = 0
-		sum_ranks = 0
-
-		while(j < num_datasets):
-			sum_ranks = sum_ranks + rank_Hov[j][i]	
-			j = j + 1
-
-		tmp.append(sum_ranks / num_datasets)
-		i = i + 1
-		
-	return tmp
-
-
-def avg_rank_5x2cv(num_datasets, rank_5x2cv):
-
-	i = 0
-	tmp = []
-
-	while(i < len(final_algo)):
-
-		j = 0
-		sum_ranks = 0
-
-		while(j < num_datasets):
-			sum_ranks = sum_ranks + rank_5x2cv[j][i]	
+			sum_ranks = sum_ranks + rank[j][i]	
 			j = j + 1
 
 		tmp.append(sum_ranks / num_datasets)
@@ -191,10 +173,7 @@ def avg_rank_5x2cv(num_datasets, rank_5x2cv):
 def rank(mat, num_datasets):
 
 	i = 0
-<<<<<<< HEAD
         tmp = []
-=======
->>>>>>> e88b924eb55b3ce839f33eed537a776a73f578a3
 
 	while(i < num_datasets):
 
@@ -235,15 +214,9 @@ def rank(mat, num_datasets):
 
         	        if(len(rline) == (len(final_algo) - 1)):
         	                rline.append(r)
-<<<<<<< HEAD
 	        tmp.append(rline)
-=======
->>>>>>> e88b924eb55b3ce839f33eed537a776a73f578a3
 	        i = i + 1
         return tmp
-
-
-	
 
 #Performs 10cv cross validation and stores the mean in the matrix
 
@@ -257,18 +230,16 @@ def CV10(dataset,  algo, num_datasets):
 	cls = Classifier(classname=algo)
 
 	evl = Evaluation(data)
-	evl.crossvalidate_model(cls, data, 2, Random(5))
+	evl.crossvalidate_model(cls, data, 10, Random(1))
 
-<<<<<<< HEAD
-=======
-
+        print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
+#        print(evl.matrix("=== NaiveBayes on click prediction(confusion matrix) ==="))
 	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
 	return evl.area_under_roc(1)
 
 def HOV(dataset,  algo, num_datasets):
 	#Executing HOV \_*-*_/
 
-#	jvm.start(packages=True)
 	loader = Loader(classname="weka.core.converters.ArffLoader")
 	data = loader.load_file(dataset)
 	data.class_is_last()
@@ -280,13 +251,11 @@ def HOV(dataset,  algo, num_datasets):
 
 	evl = Evaluation(train)
 	evl.test_model(cls, test)
->>>>>>> e88b924eb55b3ce839f33eed537a776a73f578a3
 
 	return evl.area_under_roc(1)
 	
 def CV5x2(dataset,  algo, num_datasets):
 
-	#Executing 10FCV
 	loader = Loader(classname="weka.core.converters.ArffLoader")
 	data = loader.load_file(dataset)
 	data.class_is_last()
@@ -297,6 +266,7 @@ def CV5x2(dataset,  algo, num_datasets):
 	evl.crossvalidate_model(cls, data, 2, Random(5))
 
 	return evl.area_under_roc(1)
+
 #Adding Datasets
 
 def filechoose():
@@ -313,12 +283,13 @@ def filechoose():
     final_data_list.append(dataset_list)
 
 #Select algo
+
 def selectalgo():
         master = tk.Toplevel(root)
         center(master)
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
-        master.geometry('%sx%s' % (width/4, height/4))
+        master.geometry('%sx%s' % (width/3, height/3))
 	master.config(bg="white")
 
         def var_states():
@@ -346,13 +317,8 @@ def selectalgo():
                         n += 1
 
 
-<<<<<<< HEAD
-#                print(final_algo)	#Print algo list
                 algo_len = len(final_algo)
-#		print ("Number of algorithms selected : " + str(algo_len))
-=======
 
->>>>>>> e88b924eb55b3ce839f33eed537a776a73f578a3
                 master.destroy()
 
         algo_pic = ImageTk.PhotoImage(Image.open("dd6.png"))
