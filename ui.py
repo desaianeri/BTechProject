@@ -10,6 +10,7 @@ import weka.plot.classifiers as plcls  # NB: matplotlib is required
 import os
 from weka.core.converters import Loader
 import numpy
+import scipy.stats
 
 #Declaration of global variables
 
@@ -126,6 +127,14 @@ def execute():
     
         print("---friedman  10 cv---" + str(friedman_10cv))
 
+        #Calculate f-distribution
+        ff_10cv = f_distribution(friedman_10cv, total_num_datasets)
+
+        print("---f distribution  10 cv---" + str(ff_10cv))
+
+        #decide whether or not to perform post hoc tests
+        decide_post_hoc(total_num_datasets, ff_10cv)
+
 	rank_Hov = rank(sorted_hov, total_num_datasets)
 
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
@@ -135,9 +144,34 @@ def execute():
 
         avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
 
+#Decide whether or not to perform post hoc tests
+
+def decide_post_hoc(num_datasets, Ff):
+
+    degree_of_freedom = (len(final_algo) - 1) * (num_datasets - 1)
+    f_critical =  scipy.stats.f.ppf(q=1-0.05, dfn = (len(final_algo) - 1) , dfd = degree_of_freedom)
+
+    if(f_critical < Ff):
+        #reject null hypothesis and perform post hoc
+        print "perform post hoc"
+    else:
+        #display dialog box and inform that post hoc cannot be performed
+        print "don't perform post hoc"
+
+
+#Calculate f-distribution vlues
+
+def f_distribution(friedman, num_datasets):
+
+    ff = 0.0
+    ff = ((num_datasets - 1) * friedman) / ((num_datasets * (len(final_algo)  - 1)) - friedman)
+#    print("---ff---- " + str(ff))
+    return ff
+
 #Perfrom firedman test
 
 def friedman(rank_list, num_datasets):
+
     result = 0.0
     sum_ranks = 0.0
 
