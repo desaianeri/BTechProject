@@ -120,6 +120,12 @@ def execute():
 	avg_rank_list_10cv = avg_rank(total_num_datasets, final_rank_10cv)
 
         print("--avg rank ::" + str(avg_rank_list_10cv))
+
+        #Perform friedman test
+        friedman_10cv = friedman(avg_rank_list_10cv, total_num_datasets)
+    
+        print("---friedman  10 cv---" + str(friedman_10cv))
+
 	rank_Hov = rank(sorted_hov, total_num_datasets)
 
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
@@ -128,6 +134,27 @@ def execute():
 	avg_rank_list_Hov = avg_rank(total_num_datasets, rank_Hov)
 
         avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
+
+#Perfrom firedman test
+
+def friedman(rank_list, num_datasets):
+    result = 0.0
+    sum_ranks = 0.0
+
+    tmp1 = (12 * num_datasets)/(len(final_algo)*(len(final_algo) + 1))
+#    print ("---tmp1----" + str(tmp1))
+    
+    for i in rank_list:
+#        print("----rank i----" + str(i))
+        sum_ranks  = sum_ranks + (i * i)
+        
+    tmp2 = sum_ranks - ((len(final_algo) * pow((len(final_algo) + 1), 2)) / 4)
+
+    result = tmp1 * tmp2
+
+#    print "---result---" + str(result)
+
+    return result
 
 #Calculates final rank matrix
 
