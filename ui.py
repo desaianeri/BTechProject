@@ -11,6 +11,7 @@ import os
 from weka.core.converters import Loader
 import numpy
 import scipy.stats
+import tkMessageBox
 
 #Declaration of global variables
 
@@ -81,8 +82,7 @@ def execute():
 
 		a = 0
 		mat_list =[]
-
-                #added confirm once
+		#added confirm once
                 mat_Hlist = []
                 mat_5x2list = []
 
@@ -102,10 +102,11 @@ def execute():
 
 	#Sorts the entries row wise to calculate the ranks in descending order
 
+	print (MatHov[0])
         index_10cv , sorted_10cv =  perform_sort(Mat10cv)
 
 #       added - confirm once
-        index_hov, sorted_hov = perform_sort(MatHov)
+        index_Hov, sorted_Hov = perform_sort(MatHov)
         index_5x2cv, sorted_5x2cv = perform_sort(Mat5x2cv)
 
 	#Rank matrix generation
@@ -135,14 +136,25 @@ def execute():
         #decide whether or not to perform post hoc tests
         decide_post_hoc(total_num_datasets, ff_10cv)
 
-	rank_Hov = rank(sorted_hov, total_num_datasets)
+	rank_Hov = rank(sorted_Hov, total_num_datasets)
+	final_rank_Hov = final_rank(rank_Hov, index_Hov)
+	print("---final rank list Hov -----" + str(final_rank_Hov))
+	avg_rank_list_Hov = avg_rank(total_num_datasets, final_rank_Hov)
+	print("--avg rank Hov::" + str(avg_rank_list_Hov))
+	friedman_Hov = friedman(avg_rank_list_Hov, total_num_datasets)
+	print("---friedman  Hov---" + str(friedman_Hov))
+	ff_Hov = f_distribution(friedman_Hov, total_num_datasets)
+	print("---f distribution  Hov---" + str(ff_Hov))
+	decide_post_hoc(total_num_datasets, ff_Hov)
+    
 
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
-	avg_rank_list_Hov = avg_rank(total_num_datasets, rank_Hov)
-
         avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
+
+def dbox_no_posthoc():
+	tkMessageBox.showinfo("Post Hoc", "Sorry, cannot perform post-hoc test :( Critical value is greater than calculated value. click ok to proceed")
 
 #Decide whether or not to perform post hoc tests
 
@@ -156,6 +168,7 @@ def decide_post_hoc(num_datasets, Ff):
         print "perform post hoc"
     else:
         #display dialog box and inform that post hoc cannot be performed
+	dbox_no_posthoc()
         print "don't perform post hoc"
 
 
@@ -320,7 +333,7 @@ def CV10(dataset,  algo, num_datasets):
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 10, Random(1))
 
-        print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
+#        print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
 #        print(evl.matrix("=== NaiveBayes on click prediction(confusion matrix) ==="))
 	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
 	return evl.area_under_roc(1)
@@ -377,8 +390,8 @@ def selectalgo():
         center(master)
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
-        master.geometry('%sx%s' % (width/3, height/3))
-	master.config(bg="white")
+        master.geometry('%sx%s' % (width/5, height/4))
+	master.config(bg="blanched almond")
 
         def var_states():
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
@@ -410,22 +423,22 @@ def selectalgo():
                 master.destroy()
 
         algo_pic = ImageTk.PhotoImage(Image.open("dd6.png"))
-        label = tk.Label(master, image = algo_pic, text="Algorithms:", bg = "white").grid(row = 0, sticky = tk.W, pady = 1)
+        label = tk.Label(master, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
         var1 = tk.IntVar()
-        cb1 = tk.Checkbutton(master, text = "ANN", bg = "white", variable = var1).grid(row = 2, sticky = tk.W)
+        cb1 = tk.Checkbutton(master, text = "ANN", bg = "salmon", variable = var1).grid(row = 2, sticky = tk.W)
         var2 = tk.IntVar()
-        cb2 = tk.Checkbutton(master, text = "KNN", bg = "white", variable = var2).grid(row = 3, sticky = tk.W)
+        cb2 = tk.Checkbutton(master, text = "KNN", bg = "indian red", variable = var2).grid(row = 3, sticky = tk.W)
         var3 = tk.IntVar()
-        cb3 = tk.Checkbutton(master, text = "SVM", bg = "white", variable = var3).grid(row = 4, sticky = tk.W)
+        cb3 = tk.Checkbutton(master, text = "SVM", bg = "salmon", variable = var3).grid(row = 4, sticky = tk.W)
         var4 = tk.IntVar()
-        cb4 = tk.Checkbutton(master, text = "Random Forest",bg = "white", variable = var4).grid(row = 5, sticky = tk.W)
+        cb4 = tk.Checkbutton(master, text = "Random Forest",bg = "indian red", variable = var4).grid(row = 5, sticky = tk.W)
         var5 = tk.IntVar()
-        cb5 = tk.Checkbutton(master, text = "Naive Bayes",bg = "white", variable = var5).grid(row = 6, sticky = tk.W)
+        cb5 = tk.Checkbutton(master, text = "Naive Bayes",bg = "salmon", variable = var5).grid(row = 6, sticky = tk.W)
 
 	dphoto = ImageTk.PhotoImage(Image.open("dd4.png"))
-        done = tk.Button(master, text = "done",image = dphoto, bg = "white", command = var_states).grid(row = 7, sticky = tk.W, pady = 4)
+        done = tk.Button(master, text = "done",image = dphoto, bg = "indian red", command = var_states).grid(row = 7, sticky = tk.W, pady = 4)
 	qphoto = ImageTk.PhotoImage(Image.open("dd5.png"))
-        quit = tk.Button(master, text = "quit",image = qphoto, bg = "white", command = master.destroy).grid(row = 7, column = 2, sticky = tk.W, pady = 4)
+        quit = tk.Button(master, text = "quit",image = qphoto, bg = "indian red", command = master.destroy).grid(row = 7, column = 2, sticky = tk.W, pady = 4)
 
 	
    	master.mainloop()
@@ -455,3 +468,4 @@ algo.place(x = 400, y = 600)
 run.place(x = 1100, y = 535 )
 
 root.mainloop()
+
