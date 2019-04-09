@@ -188,7 +188,7 @@ def f_distribution(friedman, num_datasets):
 
     ff = 0.0
     ff = ((num_datasets - 1) * friedman) / ((num_datasets * (len(final_algo)  - 1)) - friedman)
-#    print("---ff---- " + str(ff))
+
     return ff
 
 #Perfrom firedman test
@@ -199,17 +199,13 @@ def friedman(rank_list, num_datasets):
     sum_ranks = 0.0
 
     tmp1 = (12 * num_datasets)/(len(final_algo)*(len(final_algo) + 1))
-#    print ("---tmp1----" + str(tmp1))
     
     for i in rank_list:
-#        print("----rank i----" + str(i))
         sum_ranks  = sum_ranks + (i * i)
         
     tmp2 = sum_ranks - ((len(final_algo) * pow((len(final_algo) + 1), 2)) / 4)
 
     result = tmp1 * tmp2
-
-#    print "---result---" + str(result)
 
     return result
 
@@ -220,9 +216,6 @@ def final_rank(rank, index):
     row = len(rank)
     col = len(rank[0])
     final_rank_list = [[0 for x in range(col)] for y in range(row)]
-
-#    print("---final rank rank -----" + str(rank))
-#    print("---final rank index -----" + str(index))
 
     i = 0
 
@@ -237,7 +230,6 @@ def final_rank(rank, index):
 
         i = i + 1
 
-#    print("---final rank list -----" + str(final_rank_list))
     return final_rank_list
 
 #Sorts the matrix required to calculate rank and generates the index matrix
@@ -252,9 +244,6 @@ def perform_sort(mat):
             sorted_mat.append((numpy.sort(i)[::-1]).tolist())   
             index.append((numpy.argsort(i)[::-1]).tolist())
             
-#    print("sorted matrix---" + str(sorted_mat))            
-#    print("index matrix----" + str(index))
-
     return index , sorted_mat
 
 #Calculation of average rank
@@ -264,7 +253,6 @@ def avg_rank(num_datasets, rank):
 	i = 0
 	tmp = []
 
-#	print("rank matrix ------" + str(rank_10cv))
 	while(i < len(final_algo)):
 
 		j = 0
