@@ -402,6 +402,7 @@ def selectalgo():
         height = master.winfo_screenheight()
         master.geometry('%sx%s' % (width/5, height/4))
 	master.config(bg="blanched almond")
+	master.resizable(False, False)
 
         def var_states():
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
