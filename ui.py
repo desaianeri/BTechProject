@@ -400,7 +400,7 @@ def selectalgo():
         center(master)
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
-        master.geometry('%sx%s' % (width/5, height/4))
+        master.geometry('%sx%s' % (width/3, height/3))
 	master.config(bg="blanched almond")
 	master.resizable(False, False)
 
@@ -463,18 +463,18 @@ background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 dataset = tk.Button(root, text="Choose Datasets")
 photo = ImageTk.PhotoImage(Image.open("dataset.png"))
-dataset.config(image=photo,width ="130",height = "70", activebackground="black", bd=0, command = filechoose)
+dataset.config(image=photo,width ="130",height = "70", activebackground="black", bg = "brown", command = filechoose)
 
 algo = tk.Button(root, text="Choose Algorithms", foreground = 'red')
 photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
-algo.config(image=photo1,width ="140",height = "60", activebackground="black", bd=0, command = selectalgo)
+algo.config(image=photo1,width ="140",height = "60", activebackground="black", bg = "red", command = selectalgo)
 
 run = tk.Button(root, text="RUN")
 photo2 = ImageTk.PhotoImage(Image.open("run.png"))
-run.config(image=photo2,width ="160",height = "130", activebackground="black",bg="black", command = execute)
+run.config(image=photo2,width ="160",height = "130", activebackground="blue",bg="black", command = execute)
 
-dataset.place(x = 700, y = 585)
-algo.place(x = 400, y = 600)
+dataset.place(x = 1100, y = 350)
+algo.place(x = 1100, y = 180)
 run.place(x = 1100, y = 535 )
 
 root.mainloop()
