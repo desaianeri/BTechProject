@@ -102,7 +102,7 @@ def execute():
 
 	#Sorts the entries row wise to calculate the ranks in descending order
 
-	print (MatHov[0])
+#	print (MatHov[0])
         index_10cv , sorted_10cv =  perform_sort(Mat10cv)
 
 #       added - confirm once
@@ -139,12 +139,16 @@ def execute():
 	rank_Hov = rank(sorted_Hov, total_num_datasets)
 	final_rank_Hov = final_rank(rank_Hov, index_Hov)
 	print("---final rank list Hov -----" + str(final_rank_Hov))
+
 	avg_rank_list_Hov = avg_rank(total_num_datasets, final_rank_Hov)
 	print("--avg rank Hov::" + str(avg_rank_list_Hov))
+
 	friedman_Hov = friedman(avg_rank_list_Hov, total_num_datasets)
 	print("---friedman  Hov---" + str(friedman_Hov))
+
 	ff_Hov = f_distribution(friedman_Hov, total_num_datasets)
 	print("---f distribution  Hov---" + str(ff_Hov))
+
 	decide_post_hoc(total_num_datasets, ff_Hov)
     
 
@@ -166,11 +170,17 @@ def decide_post_hoc(num_datasets, Ff):
     if(f_critical < Ff):
         #reject null hypothesis and perform post hoc
         print "perform post hoc"
+        nemenyi()
     else:
         #display dialog box and inform that post hoc cannot be performed
 	dbox_no_posthoc()
         print "don't perform post hoc"
 
+#Perform post hoc (Nemenyi test)
+
+def nemenyi():
+    print "ifdnw"
+#    critical _diff = 
 
 #Calculate f-distribution vlues
 
@@ -374,12 +384,12 @@ def filechoose():
 
     global n
     filez = tkFileDialog.askopenfilenames(parent=root,title='Choose a file')
-    pathlabel2 = tk.Label(root)
-    pathlabel2.pack()
-    pathlabel2.config(text=filez)
-    m = 650
-    pathlabel2.place(x = m ,y = n)
-    n = n + 100
+#    pathlabel2 = tk.Label(root)
+#    pathlabel2.pack()
+#    pathlabel2.config(text=filez)
+#    m = 650
+#    pathlabel2.place(x = m ,y = n)
+#    n = n + 100
     dataset_list = root.tk.splitlist(filez)
     final_data_list.append(dataset_list)
 
@@ -439,7 +449,6 @@ def selectalgo():
         done = tk.Button(master, text = "done",image = dphoto, bg = "indian red", command = var_states).grid(row = 7, sticky = tk.W, pady = 4)
 	qphoto = ImageTk.PhotoImage(Image.open("dd5.png"))
         quit = tk.Button(master, text = "quit",image = qphoto, bg = "indian red", command = master.destroy).grid(row = 7, column = 2, sticky = tk.W, pady = 4)
-
 	
    	master.mainloop()
 
@@ -468,4 +477,3 @@ algo.place(x = 400, y = 600)
 run.place(x = 1100, y = 535 )
 
 root.mainloop()
-
