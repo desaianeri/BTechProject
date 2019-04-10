@@ -135,7 +135,7 @@ def execute():
         print("---f distribution  10 cv---" + str(ff_10cv))
 
         #decide whether or not to perform post hoc tests
-        decide_post_hoc(total_num_datasets, ff_10cv)
+        decide_post_hoc(total_num_datasets, ff_10cv, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
 
 	rank_Hov = rank(sorted_Hov, total_num_datasets)
 	final_rank_Hov = final_rank(rank_Hov, index_Hov)
@@ -150,7 +150,7 @@ def execute():
 	ff_Hov = f_distribution(friedman_Hov, total_num_datasets)
 	print("---f distribution  Hov---" + str(ff_Hov))
 
-	decide_post_hoc(total_num_datasets, ff_Hov)
+	decide_post_hoc(total_num_datasets, ff_Hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
     
 
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
@@ -163,17 +163,17 @@ def dbox_no_posthoc():
 
 #Decide whether or not to perform post hoc tests
 
-def decide_post_hoc(num_datasets, Ff):
+def decide_post_hoc(num_datasets, Ff, avg_10cv, avg_hov, avg_5X2cv):
 
     degree_of_freedom = (len(final_algo) - 1) * (num_datasets - 1)
     f_critical =  scipy.stats.f.ppf(q=1-0.05, dfn = (len(final_algo) - 1) , dfd = degree_of_freedom)
 
-    nemenyi(num_datasets)
+    nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv)
 
     if(f_critical < Ff):
         #reject null hypothesis and perform post hoc
         print "perform post hoc"
-        nemenyi(num_datasets)
+        nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv)
     else:
         #display dialog box and inform that post hoc cannot be performed
 	dbox_no_posthoc()
@@ -181,12 +181,29 @@ def decide_post_hoc(num_datasets, Ff):
 
 #Perform post hoc (Nemenyi test)
 
-def nemenyi(num_datasets):
+def nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv):
    
     critical_diff = 0.0
+    threshold_10cv = 0.0
+
     critical_diff = calculate_critical_difference(num_datasets)    
 
-#    print "critical difference---" + str(critical_diff)
+    #Get the threshold for all the validations
+
+    threshold_10cv = get_threshold(critical_diff, avg_10cv)
+    print "threshold value for 10cv---" + str(threshold_10cv)
+
+#Calculates the threshold for validations
+
+def get_threshold(critical_diff, final_rank):
+
+    threshold = 0.0
+
+    print("final average rank in 10cv-----" + final_rank)
+    print("minimum of average rank in 10cv--- " + min(final_rank))
+    threshold = min(final_rank) + float(critical_diff)
+
+    return threshold
 
 #Calculates critical difference
 
