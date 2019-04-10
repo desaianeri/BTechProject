@@ -12,6 +12,7 @@ from weka.core.converters import Loader
 import numpy
 import scipy.stats
 import tkMessageBox
+import math
 
 #Declaration of global variables
 
@@ -167,10 +168,12 @@ def decide_post_hoc(num_datasets, Ff):
     degree_of_freedom = (len(final_algo) - 1) * (num_datasets - 1)
     f_critical =  scipy.stats.f.ppf(q=1-0.05, dfn = (len(final_algo) - 1) , dfd = degree_of_freedom)
 
+    nemenyi(num_datasets)
+
     if(f_critical < Ff):
         #reject null hypothesis and perform post hoc
         print "perform post hoc"
-        nemenyi()
+        nemenyi(num_datasets)
     else:
         #display dialog box and inform that post hoc cannot be performed
 	dbox_no_posthoc()
@@ -178,16 +181,35 @@ def decide_post_hoc(num_datasets, Ff):
 
 #Perform post hoc (Nemenyi test)
 
-def nemenyi():
-    print "ifdnw"
-#    critical _diff = 
+def nemenyi(num_datasets):
+   
+    critical_diff = 0.0
+    critical_diff = calculate_critical_difference(num_datasets)    
+
+#    print "critical difference---" + str(critical_diff)
+
+#Calculates critical difference
+
+def calculate_critical_difference(num_datasets):
+
+    critical_diff = 0.0
+    qAlpha = 0.0
+    tmp= 0.0
+
+    qAlpha_values = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    qAlpha = qAlpha_values[len(final_algo) - 2]
+
+    tmp =  (float(len(final_algo)) * (len(final_algo) + 1)) / (6 * num_datasets)
+    critical_diff = float(qAlpha) * math.sqrt(tmp)
+
+    return critical_diff
 
 #Calculate f-distribution vlues
 
 def f_distribution(friedman, num_datasets):
 
     ff = 0.0
-    ff = ((num_datasets - 1) * friedman) / ((num_datasets * (len(final_algo)  - 1)) - friedman)
+    ff = (float((num_datasets - 1)) * friedman) / ((num_datasets * (len(final_algo)  - 1)) - friedman)
 
     return ff
 
@@ -198,12 +220,12 @@ def friedman(rank_list, num_datasets):
     result = 0.0
     sum_ranks = 0.0
 
-    tmp1 = (12 * num_datasets)/(len(final_algo)*(len(final_algo) + 1))
+    tmp1 = (12 * float(num_datasets))/(len(final_algo)*(len(final_algo) + 1))
     
     for i in rank_list:
-        sum_ranks  = sum_ranks + (i * i)
+        sum_ranks  = float(sum_ranks) + (i * i)
         
-    tmp2 = sum_ranks - ((len(final_algo) * pow((len(final_algo) + 1), 2)) / 4)
+    tmp2 = float(sum_ranks) - ((len(final_algo) * pow((len(final_algo) + 1), 2)) / 4)
 
     result = tmp1 * tmp2
 
@@ -215,6 +237,7 @@ def final_rank(rank, index):
 
     row = len(rank)
     col = len(rank[0])
+
     final_rank_list = [[0 for x in range(col)] for y in range(row)]
 
     i = 0
@@ -259,7 +282,7 @@ def avg_rank(num_datasets, rank):
 		sum_ranks = 0
 
 		while(j < num_datasets):
-			sum_ranks = sum_ranks + rank[j][i]	
+			sum_ranks = sum_ranks + float(rank[j][i])	
 			j = j + 1
 
 		tmp.append(sum_ranks / num_datasets)
