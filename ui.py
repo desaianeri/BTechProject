@@ -13,6 +13,7 @@ import numpy
 import scipy.stats
 import tkMessageBox
 import math
+import matplotlib.pyplot as plt
 
 #Declaration of global variables
 
@@ -152,7 +153,6 @@ def execute():
 
 	decide_post_hoc(total_num_datasets, ff_Hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
     
-
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
@@ -202,6 +202,88 @@ def nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv):
     print("----worse_algo_list returned---" + str(worse_algo_list_10cv))
 
     #Plot the graph for validation
+
+    plot_graph(threshold_10cv, avg_10cv, "r")
+
+
+#Plots the graph for given validation
+
+def plot_graph(threshold, avg_rank, th_color):
+
+    # x-coordinates of left sides of bars
+    left = []
+    i = 0
+
+    while (i < len(final_algo)):
+
+        left.append(i + 1)
+        i = i + 1
+
+    print("----left----" + str(left))
+
+    # heights of bars
+    height = avg_rank
+
+    print("----height----" + str(avg_rank))
+
+    # labels for bars
+    tick_label = get_algo_names()
+    
+    y_pos = numpy.arange(len(tick_label))
+
+    plt.bar(y_pos, height, align='center')
+
+    plt.xticks(y_pos, tick_label)
+
+    '''
+    # plotting a bar chart
+    plt.bar(left, height, tick_label = tick_label, width = 0.8, color = ['red', 'green'])
+    '''
+    # naming the x-axis
+    plt.xlabel('Algorithms')
+
+    # naming the y-axis
+    plt.ylabel('Friedman Rankings')
+
+    # plot title
+    plt.title('Nemenyi test for all validations')
+
+    #Show the thresholds 
+    plt.hlines(y = threshold, xmin = 0, xmax=60, linewidth=2, color= th_color)
+
+    # function to show the plot
+    plt.show()
+
+#    print("--- algo list---" + str(algo_list))
+#    print("----threshold in plot ---" + str(threshold))
+#    print("----avg rank ---" + str(avg_rank))
+
+#Matches the algo names
+
+def match_algo_name(argument):
+    switcher = {
+        0: "ANN",
+        1: "KNN",
+        2: "SVM",
+        3: "Random Forest",
+        4: "Naive Bayes"
+    }
+
+    return switcher.get(argument, "nothing")
+
+#Returns the selected algo names
+
+def get_algo_names():
+    algo_names = []
+    i = 0
+
+    while(i < len(algo_list)):
+        if(algo_list[i] == 1):
+            algo_names.append(match_algo_name(i))
+        
+        i = i + 1
+
+    return algo_names
 
 #Return the list of algorithms whose performance is worse than the control algorithm
 
@@ -438,12 +520,6 @@ def filechoose():
 
     global n
     filez = tkFileDialog.askopenfilenames(parent=root,title='Choose a file')
-#    pathlabel2 = tk.Label(root)
-#    pathlabel2.pack()
-#    pathlabel2.config(text=filez)
-#    m = 650
-#    pathlabel2.place(x = m ,y = n)
-#    n = n + 100
     dataset_list = root.tk.splitlist(filez)
     final_data_list.append(dataset_list)
 
@@ -459,6 +535,7 @@ def selectalgo():
 	master.resizable(False, False)
 
         def var_states():
+                global algo_list
                 algo_list = [var1.get(), var2.get(), var3.get(), var4.get(), var5.get()]
                 l = len(algo_list)
 
