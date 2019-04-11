@@ -186,12 +186,38 @@ def nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv):
     critical_diff = 0.0
     threshold_10cv = 0.0
 
+    #Get the ciritcal difference value
+    
     critical_diff = calculate_critical_difference(num_datasets)    
+    print "critical difference---" + str(critical_diff)
 
     #Get the threshold for all the validations
 
     threshold_10cv = get_threshold(critical_diff, avg_10cv)
     print "threshold value for 10cv---" + str(threshold_10cv)
+
+    #Get the list of algorithm who perform worse than the control algorithm
+
+    worse_algo_list_10cv = get_worse_algo_list(avg_10cv, threshold_10cv)
+    print("----worse_algo_list returned---" + str(worse_algo_list_10cv))
+
+    #Plot the graph for validation
+
+#Return the list of algorithms whose performance is worse than the control algorithm
+
+def get_worse_algo_list(avg_rank, threshold):
+
+    worse_algo_list = []
+    i = 0
+
+    while(i < len(avg_rank)):
+
+        print ("avg_rank----" + str(avg_rank[i]))
+        if(avg_rank[i] > threshold):
+            worse_algo_list.append(i)
+        i = i + 1
+
+    return worse_algo_list
 
 #Calculates the threshold for validations
 
@@ -199,8 +225,8 @@ def get_threshold(critical_diff, final_rank):
 
     threshold = 0.0
 
-    print("final average rank in 10cv-----" + final_rank)
-    print("minimum of average rank in 10cv--- " + min(final_rank))
+    print("final average rank in 10cv-----" + str(final_rank))
+    print("minimum of average rank in 10cv--- " + str(min(final_rank)))
     threshold = min(final_rank) + float(critical_diff)
 
     return threshold
