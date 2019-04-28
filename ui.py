@@ -231,14 +231,13 @@ def plot_graph(threshold, avg_rank, th_color):
     
     y_pos = numpy.arange(len(tick_label))
 
-    plt.bar(y_pos, height, align='center')
+    new_x = [3 * i for i in y_pos]
 
-    plt.xticks(y_pos, tick_label)
+#    plt.figure(figsize=(20, 30))
+    plt.bar(new_x, height, align='center', width = 0.7)
 
-    '''
-    # plotting a bar chart
-    plt.bar(left, height, tick_label = tick_label, width = 0.8, color = ['red', 'green'])
-    '''
+    plt.xticks(new_x, tick_label, rotation = 30)
+
     # naming the x-axis
     plt.xlabel('Algorithms')
 
@@ -251,12 +250,12 @@ def plot_graph(threshold, avg_rank, th_color):
     #Show the thresholds 
     plt.hlines(y = threshold, xmin = 0, xmax=60, linewidth=2, color= th_color)
 
+    #full screen graph
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize())
+
     # function to show the plot
     plt.show()
-
-#    print("--- algo list---" + str(algo_list))
-#    print("----threshold in plot ---" + str(threshold))
-#    print("----avg rank ---" + str(avg_rank))
 
 #Matches the algo names
 
