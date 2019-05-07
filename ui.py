@@ -199,7 +199,7 @@ def dbox_no_posthoc(values):
 
         if  no_validation:
             tkMessageBox.showinfo("Hello there :)", "Post hoc cannot be performed for these validations : " + str(no_validation))
-        
+
         final_algo = []
         final_data_list = []
         algo_list = []
@@ -274,7 +274,7 @@ def nemenyi(num_datasets, avg_list, values):
     print("-----threshold list----" + str(threshold))
     print("-----worst algo list----" + str(worst_algo_list))
 
-    plot_graph(threshold, avg_list)
+    #plot_graph(threshold, avg_list)
 
 
 #Plots the graph for given validation
@@ -652,13 +652,71 @@ def selectalgo():
    	master.mainloop()
         
 #See Result
+def see_graph():
+    if threshold and avg_list:
+        plot_graph(threshold, avg_list)
+    else:
+        tkMessageBox.showinfo("Hello there :)", "Threshold values are empty. Select algorithms, datasets and run them to see the graph")
+    '''
+    th = threshold
+    av = avg_list
+
+    window = tk.Toplevel(root)
+    window.title("Results")
+    center(window)
+    width = window.winfo_screenwidth()
+    height = window.winfo_screenheight()
+    window.geometry('%sx%s' % (width/3, height/3))
+    window.config(bg="#c1e9f6")
+    #window.resizable(False, False)
+
+    algo_pic = ImageTk.PhotoImage(Image.open("bg1.jpeg"))
+    #label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
+    label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").place(x = 0, y = 0)
+    
+    dphoto1 = ImageTk.PhotoImage(Image.open("dd4.png"))
+    done = tk.Button(window, text = "done",image = dphoto1, bg = "white", command = plot_graph(threshold, avg_list)).place(x = 10, y = 4)
+    dphoto2 = ImageTk.PhotoImage(Image.open("dd5.png"))
+    quit = tk.Button(window, text = "quit",image = dphoto2, bg = "white", command = window.destroy).place(x = 10, y =12)
+
+    window.mainloop()
+    '''
+def show_file():
+    print "file"
+
 def see_result():
     print "in result"
-    window = tk.Toplevel(root)
+    
+    validation_names = ['10 FCV', "Hold Out", "5x2CV"]
+    min_avg = []
 
-    img = ImageTk.PhotoImage(Image.open("b4.png"))
-    back_label = tk.Label( image=img)
-    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+    window = tk.Toplevel(root)
+    window.title("Results")
+    center(window)
+
+    width = window.winfo_screenwidth()
+    height = window.winfo_screenheight()
+    window.geometry('%sx%s' % (width/3, height/3))
+    window.config(bg="#c1e9f6")
+
+    algo_pic = ImageTk.PhotoImage(Image.open("bg1.jpeg"))
+    #label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
+    label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").place(x = 0, y = 0)
+    ''' 
+    i = 0
+    while(i < len(avg_list)):
+        min_avg[i] = min(avg_list[i])
+        i = i + 1
+    print "--min---avg" + str(min_avg)
+    text = tk.Label(window, text="Just do it")
+    text.place(x=10,y=10)
+    '''
+    dphoto1 = ImageTk.PhotoImage(Image.open("dd4.png"))
+    done = tk.Button(window, text = "done",image = dphoto1, bg = "white", command = show_file).place(x = 50, y = 150)
+    dphoto2 = ImageTk.PhotoImage(Image.open("dd5.png"))
+    quit = tk.Button(window, text = "quit",image = dphoto2, bg = "white", command = window.destroy).place(x = 180, y =150)
+
+    window.mainloop()
 #Background Image
 
 background_image=ImageTk.PhotoImage(Image.open("b4.png"))
@@ -667,25 +725,30 @@ background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 #Adding buttons
 
-result = tk.Button(root, text="Result")
-photo3 = ImageTk.PhotoImage(Image.open("dataset.png"))
-result.config(image=photo3,width ="130",height = "70", activebackground="black", bg = "brown", command = see_result)
+algo = tk.Button(root, text="Choose Algorithms", foreground = 'red')
+photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
+algo.config(image=photo1,width ="140",height = "60", activebackground="black", bg = "red", command = selectalgo)
 
 dataset = tk.Button(root, text="Choose Datasets")
 photo = ImageTk.PhotoImage(Image.open("dataset.png"))
 dataset.config(image=photo,width ="130",height = "70", activebackground="black", bg = "brown", command = filechoose)
 
-algo = tk.Button(root, text="Choose Algorithms", foreground = 'red')
-photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
-algo.config(image=photo1,width ="140",height = "60", activebackground="black", bg = "red", command = selectalgo)
+graph = tk.Button(root, text="Graph")
+photo3 = ImageTk.PhotoImage(Image.open("butter_button.png"))
+graph.config(image=photo3,width ="160",height = "60", activebackground="black", bg = "red", command = see_graph)
+
+result = tk.Button(root, text="Result")
+photo4 = ImageTk.PhotoImage(Image.open("sq_button.png"))
+result.config(image=photo4,width ="160",height = "80", activebackground="black", bg = "brown", command = see_result)
 
 run = tk.Button(root, text="RUN")
 photo2 = ImageTk.PhotoImage(Image.open("run.png"))
 run.config(image=photo2,width ="160",height = "130", activebackground="blue",bg="black", command = execute)
 
-result.place(x = 1100, y = 100)
-dataset.place(x = 1100, y = 400)
-algo.place(x = 1100, y = 250)
-run.place(x = 1100, y = 535 )
+algo.place(x = 1100, y = 180) #290
+dataset.place(x = 1100, y = 50) #400
+graph.place(x = 1100, y = 290) #180
+result.place(x = 1100, y = 400) #50
+run.place(x = 1100, y = 535 ) #535
 
 root.mainloop()
