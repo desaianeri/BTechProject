@@ -21,6 +21,10 @@ final_algo = []
 final_data_list = []
 algo_list = []
 
+orig_stdout = sys.stdout
+f = open('out.txt', 'w')
+sys.stdout = f
+
 root=tk.Tk()
 #Fullscreen window
 root.title("ART")
@@ -686,7 +690,7 @@ def show_file():
 
 def see_result():
     print "in result"
-    
+    print "--final algo" + str(final_algo) 
     validation_names = ['10 FCV', "Hold Out", "5x2CV"]
     min_avg = []
 
@@ -702,15 +706,23 @@ def see_result():
     algo_pic = ImageTk.PhotoImage(Image.open("bg1.jpeg"))
     #label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
     label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").place(x = 0, y = 0)
-    ''' 
+
     i = 0
-    while(i < len(avg_list)):
-        min_avg[i] = min(avg_list[i])
+    #min_avg.append(avg_list[0].index(min(avg_list[0])))
+    #print "---avg_list index---" + str(min_avg[0])
+    
+    while(i < 3):
+        min_avg.append(avg_list[i].index(min(avg_list[i])))
         i = i + 1
-    print "--min---avg" + str(min_avg)
-    text = tk.Label(window, text="Just do it")
+       
+    print "---avg_list index---" + str(min_avg)
+
+    res1 = "Best Algorithm for 10CV is" + final_algo[min_avg[0]] + "\n"
+    res2 = "Best Algorithm for Hold Out is" + final_algo[min_avg[1]] + "\n"
+    res3 = "Best Algorithm for 5x2cv is" + final_algo[min_avg[2]] + "\n"
+    text = tk.Label(window, text= res1 + res2 + res3)
     text.place(x=10,y=10)
-    '''
+    
     dphoto1 = ImageTk.PhotoImage(Image.open("dd4.png"))
     done = tk.Button(window, text = "done",image = dphoto1, bg = "white", command = show_file).place(x = 50, y = 150)
     dphoto2 = ImageTk.PhotoImage(Image.open("dd5.png"))
