@@ -21,9 +21,8 @@ final_algo = []
 final_data_list = []
 algo_list = []
 
-#Fullscreen window
-
 root=tk.Tk()
+#Fullscreen window
 root.title("ART")
 root.attributes('-zoomed', True)
 
@@ -47,9 +46,19 @@ def center(win):
         win.deiconify()
 
 n = 100
-#RUN action
 
+#Run button click action
+
+#def show_terminal():
+#    os.system("gnome-terminal -e 'python execute.py'")
+
+#RUN action
+avg_list = []
 def execute():
+
+#        print("-----final_algo----" + str(final_algo))
+#        print("-----_algo_list----" + str(algo_list))
+#        print("-----final_data_list----" + str(final_data_list))
 
 	total_num_datasets = 0
 	dataset_string = []
@@ -66,6 +75,7 @@ def execute():
 	mat_5x2list = []
 	avg_rank_list_5x2cv = []
 
+        global avg_list
 
 	#iterate over final_data_list to get total number of selected datasets
 	#i is the list
@@ -136,9 +146,10 @@ def execute():
         print("---f distribution  10 cv---" + str(ff_10cv))
 
         #decide whether or not to perform post hoc tests
-        decide_post_hoc(total_num_datasets, ff_10cv, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
+        #decide_post_hoc(total_num_datasets, ff_10cv, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
 
 	rank_Hov = rank(sorted_Hov, total_num_datasets)
+
 	final_rank_Hov = final_rank(rank_Hov, index_Hov)
 	print("---final rank list Hov -----" + str(final_rank_Hov))
 
@@ -151,113 +162,158 @@ def execute():
 	ff_Hov = f_distribution(friedman_Hov, total_num_datasets)
 	print("---f distribution  Hov---" + str(ff_Hov))
 
-	decide_post_hoc(total_num_datasets, ff_Hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
+	#decide_post_hoc(total_num_datasets, ff_Hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
     
         rank_5x2cv = rank(sorted_5x2cv, total_num_datasets)
 	#calculating avergage rank list for a given rank matrix
 
-        avg_rank_list_5x2cv = avg_rank(total_num_datasets, rank_5x2cv)
+	final_rank_5x2cv = final_rank(rank_5x2cv, index_5x2cv)
+	print("---final rank list 5x2cv -----" + str(final_rank_5x2cv))
 
-def dbox_no_posthoc():
-	tkMessageBox.showinfo("Post Hoc", "Sorry, cannot perform post-hoc test :( Critical value is greater than calculated value. click ok to proceed")
+	avg_rank_list_5x2cv = avg_rank(total_num_datasets, final_rank_5x2cv)
+	print("--avg rank 5x2cv::" + str(avg_rank_list_5x2cv))
+
+	friedman_5x2cv = friedman(avg_rank_list_5x2cv, total_num_datasets)
+	print("---friedman  5x2cv---" + str(friedman_5x2cv))
+
+	ff_5x2cv = f_distribution(friedman_5x2cv, total_num_datasets)
+	print("---f distribution  5x2cv---" + str(ff_5x2cv))
+
+        avg_list.append(avg_rank_list_10cv)
+        avg_list.append(avg_rank_list_Hov)
+        avg_list.append(avg_rank_list_5x2cv)
+
+	#decide_post_hoc(total_num_datasets, ff_10cv, ff_5x2cv,ff_hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
+	decide_post_hoc(total_num_datasets, ff_10cv, ff_5x2cv, ff_Hov, avg_list)
+    
+
+def dbox_no_posthoc(values):
+        no_validation = []
+        i = 0
+        while(i < 3):
+            if(values[i] == 0):
+                no_validation.append(match_validation_name(i))
+            i = i + 1
+           
+        print"---no validation---" + str(no_validation)
+
+        if  no_validation:
+            tkMessageBox.showinfo("Hello there :)", "Post hoc cannot be performed for these validations : " + str(no_validation))
+        
+        final_algo = []
+        final_data_list = []
+        algo_list = []
 
 #Decide whether or not to perform post hoc tests
 
-def decide_post_hoc(num_datasets, Ff, avg_10cv, avg_hov, avg_5X2cv):
-
+def decide_post_hoc(num_datasets, Ff_10cv,Ff_5x2cv, Ff_hov, avg_list):
+    print "in decide post hoc---avg list---" + str(avg_list)
+    values = [0,0,0]
     degree_of_freedom = (len(final_algo) - 1) * (num_datasets - 1)
     f_critical =  scipy.stats.f.ppf(q=1-0.05, dfn = (len(final_algo) - 1) , dfd = degree_of_freedom)
 
-    nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv)
+    values = [1,1,1]
+    nemenyi(num_datasets, avg_list, values)
 
-    if(f_critical < Ff):
+    if(f_critical < Ff_10cv):
         #reject null hypothesis and perform post hoc
-        print "perform post hoc"
-        nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv)
+        values[0]  = 1
+
     else:
-        #display dialog box and inform that post hoc cannot be performed
-	dbox_no_posthoc()
-        print "don't perform post hoc"
+        values[0]  = 0
+
+    if(f_critical < Ff_5x2cv):
+        #reject null hypothesis and perform post hoc
+        values[1]  = 1
+
+    else:
+        values[1]  = 0
+
+    if(f_critical < Ff_hov):
+        #reject null hypothesis and perform post hoc
+        values[2]  = 1
+
+    else:
+        values[2]  = 0
+
+    dbox_no_posthoc(values)
+'''
+    i = 0
+    while(i < 3):
+        if(values[i] == 1):
+            nemenyi(num_datasets, avg_list, values)
+            break
+        i = i + 1
+'''
 
 #Perform post hoc (Nemenyi test)
-
-def nemenyi(num_datasets, avg_10cv, avg_hov, avg_5X2cv):
+threshold = []
+def nemenyi(num_datasets, avg_list, values):
    
     critical_diff = 0.0
-    threshold_10cv = 0.0
-
+    global threshold
+    worst_algo_list = []
     #Get the ciritcal difference value
     
     critical_diff = calculate_critical_difference(num_datasets)    
     print "critical difference---" + str(critical_diff)
 
-    #Get the threshold for all the validations
+    i = 0
+    while(i < 3):
+        #Get the threshold for all the validations
 
-    threshold_10cv = get_threshold(critical_diff, avg_10cv)
-    print "threshold value for 10cv---" + str(threshold_10cv)
+        threshold.append(get_threshold(critical_diff, avg_list[i]))
 
-    #Get the list of algorithm who perform worse than the control algorithm
+        #Get the list of algorithm who perform worse than the control algorithm
 
-    worse_algo_list_10cv = get_worse_algo_list(avg_10cv, threshold_10cv)
-    print("----worse_algo_list returned---" + str(worse_algo_list_10cv))
+        worst_algo_list.append(get_worse_algo_list(avg_list[i], threshold[i]))
+        #print("----worse_algo_list returned---" + str(worse_algo_list_10cv))
 
-    #Plot the graph for validation
+        #Plot the graph for validation
+        i = i + 1
+    print("-----threshold list----" + str(threshold))
+    print("-----worst algo list----" + str(worst_algo_list))
 
-    plot_graph(threshold_10cv, avg_10cv, "r")
+    plot_graph(threshold, avg_list)
 
 
 #Plots the graph for given validation
+def plot_graph(threshold, avg_list):
+    N = len(final_algo)
+    ind = numpy.arange(N)  # the x locations for the groups
+    width = 0.08       # the width of the bars
 
-def plot_graph(threshold, avg_rank, th_color):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
-    # x-coordinates of left sides of bars
-    left = []
-    i = 0
+    rects1 = ax.bar(ind, avg_list[0], width, color='#898585')
+    rects2 = ax.bar(ind+width, avg_list[1], width, color='#070000')
+    rects3 = ax.bar(ind+width*2, avg_list[2], width, color='#9FCAEF')
 
-    while (i < len(final_algo)):
+    ax.set_ylabel('Friedman ranking')
+    ax.set_xticks(ind+width)
+    ax.set_xticklabels( get_algo_names() )
+    ax.legend( (rects1[0], rects2[0], rects3[0]), ('10cv', 'Hold Out', '5x2cv') )
 
-        left.append(i + 1)
-        i = i + 1
+    def autolabel(rects):
+        for rect in rects:
+            h = rect.get_height()
+            ax.text(rect.get_x()+rect.get_width()/2., 1.05*h, '%d'%int(h),
+                    ha='center', va='bottom')
 
-    print("----left----" + str(left))
+    autolabel(rects1)
+    autolabel(rects2)
+    autolabel(rects3)
 
-    # heights of bars
-    height = avg_rank
+    plt.axhline(y=threshold[0], color='#898585', linestyle='-')
+    plt.axhline(y=threshold[1], color='#070000', linestyle='-')
+    plt.axhline(y=threshold[2], color='#070000', linestyle='-')
 
-    print("----height----" + str(avg_rank))
-
-    # labels for bars
-    tick_label = get_algo_names()
-    
-    y_pos = numpy.arange(len(tick_label))
-
-    new_x = [3 * i for i in y_pos]
-
-#    plt.figure(figsize=(20, 30))
-    plt.bar(new_x, height, align='center', width = 0.7)
-
-    plt.xticks(new_x, tick_label, rotation = 30)
-
-    # naming the x-axis
-    plt.xlabel('Algorithms')
-
-    # naming the y-axis
-    plt.ylabel('Friedman Rankings')
-
-    # plot title
-    plt.title('Nemenyi test for all validations')
-
-    #Show the thresholds 
-    plt.hlines(y = threshold, xmin = 0, xmax=60, linewidth=2, color= th_color)
-
-    #full screen graph
     mng = plt.get_current_fig_manager()
     mng.resize(*mng.window.maxsize())
-
-    # function to show the plot
     plt.show()
 
-#Matches the algo names
+#Perform post hoc (Nemenyi test)
 
 def match_algo_name(argument):
     switcher = {
@@ -266,6 +322,17 @@ def match_algo_name(argument):
         2: "SVM",
         3: "Random Forest",
         4: "Naive Bayes"
+    }
+
+    return switcher.get(argument, "nothing")
+
+#Get validation name for no post hoc
+
+def match_validation_name(argument):
+    switcher = {
+        0: "10 fold cross validation",
+        1: "5x2 cross validation",
+        2: "hold out"
     }
 
     return switcher.get(argument, "nothing")
@@ -513,6 +580,7 @@ def CV5x2(dataset,  algo, num_datasets):
 
 	return evl.area_under_roc(1)
 
+
 #Adding Datasets
 
 def filechoose():
@@ -582,7 +650,15 @@ def selectalgo():
         quit = tk.Button(master, text = "quit",image = qphoto, bg = "indian red", command = master.destroy).grid(row = 7, column = 2, sticky = tk.W, pady = 4)
 	
    	master.mainloop()
+        
+#See Result
+def see_result():
+    print "in result"
+    window = tk.Toplevel(root)
 
+    img = ImageTk.PhotoImage(Image.open("b4.png"))
+    back_label = tk.Label( image=img)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
 #Background Image
 
 background_image=ImageTk.PhotoImage(Image.open("b4.png"))
@@ -590,6 +666,10 @@ background_label = tk.Label(image=background_image)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 #Adding buttons
+
+result = tk.Button(root, text="Result")
+photo3 = ImageTk.PhotoImage(Image.open("dataset.png"))
+result.config(image=photo3,width ="130",height = "70", activebackground="black", bg = "brown", command = see_result)
 
 dataset = tk.Button(root, text="Choose Datasets")
 photo = ImageTk.PhotoImage(Image.open("dataset.png"))
@@ -603,8 +683,9 @@ run = tk.Button(root, text="RUN")
 photo2 = ImageTk.PhotoImage(Image.open("run.png"))
 run.config(image=photo2,width ="160",height = "130", activebackground="blue",bg="black", command = execute)
 
-dataset.place(x = 1100, y = 350)
-algo.place(x = 1100, y = 180)
+result.place(x = 1100, y = 100)
+dataset.place(x = 1100, y = 400)
+algo.place(x = 1100, y = 250)
 run.place(x = 1100, y = 535 )
 
 root.mainloop()
