@@ -690,12 +690,39 @@ def selectalgo():
         
 #See Result
 def see_result():
-    print "in result"
-    window = tk.Toplevel(root)
+	print "in result"
+    
+	validation_names = ['10 FCV', "Hold Out", "5x2CV"]
+	min_avg = []
 
-    img = ImageTk.PhotoImage(Image.open("b4.png"))
-    back_label = tk.Label( image=img)
-    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+	window = tk.Toplevel(root)
+	window.title("Results")
+	center(window)
+
+	width = window.winfo_screenwidth()
+	height = window.winfo_screenheight()	
+	window.geometry('%sx%s' % (width/3, height/3))
+	window.resizable(False, False)
+	window.config(bg="rosy brown")
+
+   
+    #label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
+	label = tk.Label(window, text="Algorithms results is:", bg = "blanched almond").place(x = 0, y = 0)
+	''' 
+    i = 0
+    while(i < len(avg_list)):
+        min_avg[i] = min(avg_list[i])
+        i = i + 1
+    print "--min---avg" + str(min_avg)
+    text = tk.Label(window, text="Just do it")
+    text.place(x=10,y=10)
+    '''
+	dphoto1 = ImageTk.PhotoImage(Image.open("dd5.png"))
+	quit = tk.Button(window, text = "quit",image = dphoto1, bg = "white", command = show_file).place(x = 50, y = 150)	
+	dphoto2 = ImageTk.PhotoImage(Image.open("dd9.png"))
+	gfile = tk.Button(window, text = "file",image = dphoto2, bg = "white", command = window.destroy).place(x = 180, y =150)
+
+	window.mainloop()
 #Background Image
 
 background_image=ImageTk.PhotoImage(Image.open("b4.png"))
