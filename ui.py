@@ -14,6 +14,10 @@ import scipy.stats
 import tkMessageBox
 import math
 import matplotlib.pyplot as plt
+import cv2
+import sys
+
+
 
 #Declaration of global variables
 
@@ -59,6 +63,26 @@ n = 100
 #RUN action
 avg_list = []
 def execute():
+	master = tk.Toplevel(root)
+	master.title("In Progress")
+        center(master)
+        width = master.winfo_screenwidth()
+        height = master.winfo_screenheight()
+	
+        master.geometry('%sx%s' % (width/3, height/3))
+	master.config(bg="blanched almond")
+	master.resizable(False, False)
+	
+	#img = ImageTk.PhotoImage(Image.open("progress.png"))  
+	#master.create_image(20, 20, anchor=NW, image=img)
+	#window = tk.Toplevel(root)
+	#cv_img = cv2.imread("progress.png")
+	#height, width, no_channels = cv_img.shape
+	#canvas = tk.Canvas(window, width = width, height = height)
+ 	#canvas.pack()
+	#photo = ImageTk.PhotoImage(image = Image.fromarray(cv_img))
+	#canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+	#window.mainloop()	
 
 #        print("-----final_algo----" + str(final_algo))
 #        print("-----_algo_list----" + str(algo_list))
@@ -186,10 +210,14 @@ def execute():
         avg_list.append(avg_rank_list_10cv)
         avg_list.append(avg_rank_list_Hov)
         avg_list.append(avg_rank_list_5x2cv)
+	
+	master.destroy()
 
 	#decide_post_hoc(total_num_datasets, ff_10cv, ff_5x2cv,ff_hov, avg_rank_list_10cv, avg_rank_list_Hov,avg_rank_list_5x2cv )
 	decide_post_hoc(total_num_datasets, ff_10cv, ff_5x2cv, ff_Hov, avg_list)
-    
+	#windows.destroy()
+    	sys.stdout = orig_stdout
+	f.close()
 
 def dbox_no_posthoc(values):
         no_validation = []
@@ -203,7 +231,7 @@ def dbox_no_posthoc(values):
 
         if  no_validation:
             tkMessageBox.showinfo("Hello there :)", "Post hoc cannot be performed for these validations : " + str(no_validation))
-
+        
         final_algo = []
         final_data_list = []
         algo_list = []
@@ -278,7 +306,7 @@ def nemenyi(num_datasets, avg_list, values):
     print("-----threshold list----" + str(threshold))
     print("-----worst algo list----" + str(worst_algo_list))
 
-    #plot_graph(threshold, avg_list)
+    plot_graph(threshold, avg_list)
 
 
 #Plots the graph for given validation
@@ -549,9 +577,9 @@ def CV10(dataset,  algo, num_datasets):
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 10, Random(1))
 
-#        print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
-#        print(evl.matrix("=== NaiveBayes on click prediction(confusion matrix) ==="))
-	print("areaUnderROC/1: " + str(evl.area_under_roc(1)))
+        print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
+        print(evl.matrix("=== on click prediction(confusion matrix) ==="))
+	print("For Algo"+ str(algo)+"areaUnderROC/1: for CV10 " + str(evl.area_under_roc(1)))
 	return evl.area_under_roc(1)
 
 def HOV(dataset,  algo, num_datasets):
@@ -569,6 +597,10 @@ def HOV(dataset,  algo, num_datasets):
 	evl = Evaluation(train)
 	evl.test_model(cls, test)
 
+	print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
+        print(evl.matrix("=== on click prediction(confusion matrix) ==="))
+	print("For Algo"+ str(algo)+"areaUnderROC/1: for HOV " + str(evl.area_under_roc(1)))
+
 	return evl.area_under_roc(1)
 	
 def CV5x2(dataset,  algo, num_datasets):
@@ -581,6 +613,10 @@ def CV5x2(dataset,  algo, num_datasets):
 
 	evl = Evaluation(data)
 	evl.crossvalidate_model(cls, data, 2, Random(5))
+
+	print(evl.summary("=== " +str(algo)+ " on" + str(dataset) + " ===",False))
+        print(evl.matrix("=== on click prediction(confusion matrix) ==="))
+	print("For Algo"+ str(algo)+"areaUnderROC/1: for CV5x2 " + str(evl.area_under_roc(1)))
 
 	return evl.area_under_roc(1)
 
@@ -656,40 +692,9 @@ def selectalgo():
    	master.mainloop()
         
 #See Result
-def see_graph():
-    if threshold and avg_list:
-        plot_graph(threshold, avg_list)
-    else:
-        tkMessageBox.showinfo("Hello there :)", "Threshold values are empty. Select algorithms, datasets and run them to see the graph")
-    '''
-    th = threshold
-    av = avg_list
-
-    window = tk.Toplevel(root)
-    window.title("Results")
-    center(window)
-    width = window.winfo_screenwidth()
-    height = window.winfo_screenheight()
-    window.geometry('%sx%s' % (width/3, height/3))
-    window.config(bg="#c1e9f6")
-    #window.resizable(False, False)
-
-    algo_pic = ImageTk.PhotoImage(Image.open("bg1.jpeg"))
-    #label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").grid(row = 0, sticky = tk.W, pady = 1)
-    label = tk.Label(window, image = algo_pic, text="Algorithms:", bg = "blanched almond").place(x = 0, y = 0)
-    
-    dphoto1 = ImageTk.PhotoImage(Image.open("dd4.png"))
-    done = tk.Button(window, text = "done",image = dphoto1, bg = "white", command = plot_graph(threshold, avg_list)).place(x = 10, y = 4)
-    dphoto2 = ImageTk.PhotoImage(Image.open("dd5.png"))
-    quit = tk.Button(window, text = "quit",image = dphoto2, bg = "white", command = window.destroy).place(x = 10, y =12)
-
-    window.mainloop()
-    '''
-def show_file():
-    print "file"
-
 def see_result():
     print "in result"
+<<<<<<< HEAD
     print "--final algo" + str(final_algo) 
     validation_names = ['10 FCV', "Hold Out", "5x2CV"]
     min_avg = []
@@ -729,6 +734,7 @@ def see_result():
     quit = tk.Button(window, text = "quit",image = dphoto2, bg = "white", command = window.destroy).place(x = 180, y =150)
 
     window.mainloop()
+
 #Background Image
 
 background_image=ImageTk.PhotoImage(Image.open("b4.png"))
@@ -737,30 +743,26 @@ background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 #Adding buttons
 
-algo = tk.Button(root, text="Choose Algorithms", foreground = 'red')
-photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
-algo.config(image=photo1,width ="140",height = "60", activebackground="black", bg = "red", command = selectalgo)
+result = tk.Button(root, text="Result")
+photo3 = ImageTk.PhotoImage(Image.open("dataset.png"))
+result.config(image=photo3,width ="130",height = "70", activebackground="black", bg = "brown", command = see_result)
 
 dataset = tk.Button(root, text="Choose Datasets")
 photo = ImageTk.PhotoImage(Image.open("dataset.png"))
 dataset.config(image=photo,width ="130",height = "70", activebackground="black", bg = "brown", command = filechoose)
 
-graph = tk.Button(root, text="Graph")
-photo3 = ImageTk.PhotoImage(Image.open("butter_button.png"))
-graph.config(image=photo3,width ="160",height = "60", activebackground="black", bg = "red", command = see_graph)
-
-result = tk.Button(root, text="Result")
-photo4 = ImageTk.PhotoImage(Image.open("sq_button.png"))
-result.config(image=photo4,width ="160",height = "80", activebackground="black", bg = "brown", command = see_result)
+algo = tk.Button(root, text="Choose Algorithms", foreground = 'red')
+photo1 = ImageTk.PhotoImage(Image.open("algo.png"))
+algo.config(image=photo1,width ="140",height = "60", activebackground="black", bg = "red", command = selectalgo)
 
 run = tk.Button(root, text="RUN")
 photo2 = ImageTk.PhotoImage(Image.open("run.png"))
 run.config(image=photo2,width ="160",height = "130", activebackground="blue",bg="black", command = execute)
 
-algo.place(x = 1100, y = 180) #290
-dataset.place(x = 1100, y = 50) #400
-graph.place(x = 1100, y = 290) #180
-result.place(x = 1100, y = 400) #50
-run.place(x = 1100, y = 535 ) #535
+result.place(x = 1100, y = 100)
+dataset.place(x = 1100, y = 400)
+algo.place(x = 1100, y = 250)
+run.place(x = 1100, y = 535 )
 
 root.mainloop()
+
